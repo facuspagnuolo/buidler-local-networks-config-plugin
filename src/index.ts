@@ -6,7 +6,7 @@ import { extendConfig } from 'hardhat/config'
 import { HardhatConfig, NetworkConfig, NetworksConfig, HardhatUserConfig } from 'hardhat/types'
 
 const HARDHAT_CONFIG_DIR = '.hardhat'
-const HARDHAT_NETWORK_CONFIG_FILE = 'networks.json'
+const HARDHAT_NETWORK_DEFAULT_CONFIG_FILES = ['networks.json', 'networks.js', 'networks.ts']
 
 export interface LocalNetworksConfig {
   networks: NetworksConfig
@@ -53,12 +53,15 @@ export function parseLocalNetworksConfigPath(userConfig: HardhatUserConfig): str
     return localNetworksConfigPath
   }
 
-  const defaultLocalNetworksConfigPath = getDefaultLocalNetworksConfigPath()
-  return fs.existsSync(defaultLocalNetworksConfigPath) ? defaultLocalNetworksConfigPath : undefined
+  for (const defaultPath in getDefaultLocalNetworksConfigPaths()) {
+    if (fs.existsSync(defaultPath)) return defaultPath;
+  }
+
+  return undefined;
 }
 
-export function getDefaultLocalNetworksConfigPath() {
-  return path.join(getLocalConfigDir(), HARDHAT_NETWORK_CONFIG_FILE)
+export function getDefaultLocalNetworksConfigPaths() {
+  return HARDHAT_NETWORK_DEFAULT_CONFIG_FILES.map(file => path.join(getLocalConfigDir(), file));
 }
 
 export function getLocalConfigDir() {
